@@ -1,0 +1,3 @@
+venv/*
+service_account.json
+PyWhatKit_DB.txt
