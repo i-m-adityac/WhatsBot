@@ -9,6 +9,8 @@ This Project Aims to help in messaging Sadhaks for inspiring for gurukarya happe
 
 https://playwright.dev/python/docs/intro
 
+playwright codegen demo.playwright.dev/todomvc
+
 ### Setting up gspread
 https://docs.gspread.org/en/latest/oauth2.html
 https://docs.gspread.org/en/latest/
