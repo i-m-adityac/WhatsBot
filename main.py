@@ -11,10 +11,13 @@ def send_messages(data, imessage):
         print("Please scan the QR code on WhatsApp Web and press Enter after login.")
         input()
 
+        # print(data)
+        # import pdb;pdb.set_trace()
+        date = data[0].get('Date', '')
         for sadhak in data:
             name = sadhak.get('Name').split(' ')[0]
             contact = '+91 ' + str(sadhak.get('Contact'))
-            message = imessage.format(name)
+            message = imessage.format(name, name, date)
 
             # Search for the contact number
             search_box = page.wait_for_selector("div[contenteditable='true'][data-tab='3']")
@@ -38,15 +41,15 @@ def data_extract(sheet_url):
 
     greeting = data["greeting"]
     message = data["message"]
-    imessage = f"{greeting}\n\n{message}\n\n🌸गुरु पूर्णिमा समिति🌸"
+    imessage = f"{greeting}\n\n{message}\n\n🌸समर्पण आश्रम अरड़का🌸"
 
-    gc = gspread.service_account(filename=r"C:\Aditya\Study\Development\WhatsBot\service_account.json")
+    gc = gspread.service_account(filename=r"C:\Users\WFH\Desktop\WhaBot\service_account.json")
     gSheet = gc.open_by_url(sheet_url)
-    worksheet = gSheet.worksheet('Whatsapp')
+    worksheet = gSheet.worksheet('test')
     data = worksheet.get_all_records()
     
     send_messages(data, imessage)
 
 if __name__ == "__main__":
-    sheet_url = "https://docs.google.com/spreadsheets/d/1Ma3EFn2vsULjtG9koy_y-tHhDbTyU4Z-WszUWzBvkTk/edit#gid=1075867701"
+    sheet_url = "https://docs.google.com/spreadsheets/d/14M3lwPv2woPgqbGWASJV_R6z11Rj7TpCMejo7lv8o5M/edit?usp=sharing"
     data_extract(sheet_url)
