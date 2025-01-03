@@ -3,57 +3,66 @@ import gspread
 import pyautogui
 import pyperclip
 import time
+from datetime import datetime
 
-def send_messages(data, imessage):
-    # Open WhatsApp Desktop App
-    pyautogui.hotkey('win', 's')  # Open Windows search
-    time.sleep(1)
-    pyautogui.write('WhatsApp')  # Type WhatsApp in the search bar
-    pyautogui.press('enter')  # Open WhatsApp
-    time.sleep(5)  # Wait for WhatsApp to open completely
+class WeddingInvitation:
 
-    for sadhak in data:
-        name = sadhak.get('Name').split(' ')[0]
-        contact = '+91 ' + str(sadhak.get('Contact'))
-        message = imessage.format(name, name)
+    def __init__(self, sheet_url, service_account_path):
+        self.sheet_url = sheet_url
+        self.service_account_path = service_account_path
 
-        # Search for the contact
-        pyautogui.click(200, 100)  # Coordinates for the search box (adjust as per your screen)
+    def send_messages(self, data, message):
+        # Open WhatsApp Desktop App
+        pyautogui.hotkey('win', 's')  # Open Windows search
         time.sleep(1)
-        pyperclip.copy(contact)  # Copy contact to clipboard
-        pyautogui.hotkey('ctrl', 'v')  # Paste contact
-        time.sleep(1)
-        pyautogui.press('enter')  # Open chat with the contact
-        time.sleep(2)
+        pyautogui.write('WhatsApp')  # Type WhatsApp in the search bar
+        pyautogui.press('enter')  # Open WhatsApp
+        time.sleep(5)  # Wait for WhatsApp to open completely
 
-        # Type and send the message
-        pyperclip.copy(message)  # Copy message to clipboard
-        pyautogui.hotkey('ctrl', 'v')  # Paste message
-        time.sleep(1)
-        pyautogui.press('enter')  # Send the message
-        time.sleep(1)
+        # date = datetime.today()
 
-        # Add a small pause to ensure smooth operation
-        time.sleep(2)
+        for sadhak in data:
+            name = sadhak.get('Name').split(' ')[0]
+            contact = str(sadhak.get('Contact'))
+            pyperclip.copy(contact)  # Copy contact to clipboard
 
-def data_extract(sheet_url):
-    # Load message template from JSON
-    with open("message.json", encoding="utf-8") as file:
-        data = json.load(file)
+            # Search for the contact
+            pyautogui.click(200, 100)  # Coordinates for the search box (adjust as per your screen)
+            time.sleep(1)
+            pyautogui.hotkey('ctrl', 'v')  # Paste contact
+            time.sleep(1)
+            pyautogui.press('down')  # Navigate to the first result
+            pyautogui.press('enter')  # Open chat with the contact
+            time.sleep(1)
 
-    greeting = data["greeting"]
-    message = data["message"]
-    imessage = f"{greeting}\n\n{message}\n\n🌸समर्पण आश्रम अरड़का🌸"
+            # Type and send the message
+            pyperclip.copy(message)  # Copy message to clipboard
+            pyautogui.hotkey('ctrl', 'v')  # Paste message
+            time.sleep(1)
+            pyautogui.press('enter')  # Select the first result
+            time.sleep(2) # Send the message
 
-    # Access Google Sheet
-    gc = gspread.service_account(filename=r"C:\Users\WFH\Desktop\WhaBot\service_account.json")
-    gSheet = gc.open_by_url(sheet_url)
-    worksheet = gSheet.worksheet('test')
-    data = worksheet.get_all_records()
+            # Add a small pause to ensure smooth operation
+            time.sleep(2)
 
-    # Send messages
-    send_messages(data, imessage)
+    def extract_data(self):
+        # Load message template from JSON
+        with open("wedding_message.json", encoding="utf-8") as file:
+            data = json.load(file)
+
+        message = data["message"]
+
+        # Access Google Sheet
+        gc = gspread.service_account(filename=self.service_account_path)
+        gSheet = gc.open_by_url(self.sheet_url)
+        worksheet = gSheet.worksheet('wedding')
+        data = worksheet.get_all_records()
+
+        # Send messages
+        self.send_messages(data, message)
 
 if __name__ == "__main__":
     sheet_url = "https://docs.google.com/spreadsheets/d/14M3lwPv2woPgqbGWASJV_R6z11Rj7TpCMejo7lv8o5M/edit?usp=sharing"
-    data_extract(sheet_url)
+    service_account_path = "E:\\Development\\WhatsBot\\service_account.json"
+    wedding_invitation = WeddingInvitation(sheet_url, service_account_path)
+    wedding_invitation.extract_data()
