@@ -4,27 +4,31 @@ import gspread
 from playwright.sync_api import sync_playwright
 
 def send_messages(data, messages):
+    skipped_contacts = []  # List to keep track of skipped contacts
+
     try:
         with sync_playwright() as p:
-            user_data_dir = r"C:\Users\WFH\AppData\Local\Microsoft\Edge\User Data"
+            user_data_dir = r"C:\Users\MSI\AppData\Local\Google\Chrome\User Data"
             # Launch browser using Chromium, edge or chrome depending on your setup
             browser = p.chromium.launch_persistent_context(
                 user_data_dir=user_data_dir,
                 headless=False,  # Headless mode is False for debugging purposes
-                channel="msedge",  # Use "chrome" or "msedge" depending on your browser
+                channel="chrome",  # Use "chrome" or "msedge" depending on your browser
             )
             page = browser.new_page()
             page.goto("https://web.whatsapp.com")
+            time.sleep(10)  # Adjust if necessary based on your connection speed
+            # import pdb;pdb.set_trace()
 
             # Wait for the chat list to load, signaling WhatsApp Web is ready
             page.wait_for_selector("div[aria-label='Chat list']", timeout=10000)
 
             for sadhak in data:
                 try:
-                    name = sadhak.get('Name') 
+                    name = sadhak.get('Name')
                     contact = '+91 ' + str(sadhak.get('Contact')).lstrip()
 
-                    # Search for the contacazat number
+                    # Search for the contact number
                     search_box = page.wait_for_selector("div[contenteditable='true'][data-tab='3']", timeout=5000)
                     search_box.click()
                     search_box.fill(contact)
@@ -44,10 +48,12 @@ def send_messages(data, messages):
                         page.keyboard.press("Enter")
                         time.sleep(1)
 
-                    print(f"Message sent to {name}")
+                    print(f"Message sent to {contact} ({name})")
                 except Exception as e:
                     print(f"Error while sending message to {contact}: {e}")
-
+                    skipped_contacts.append(contact)  # Add to skipped list in case of error
+            time.sleep(5) 
+            page.close()
             browser.close()  # Close the browser once done
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -56,7 +62,7 @@ def data_extract(sheet_url):
     with open("message_single.json", encoding="utf-8") as file:
         messages = json.load(file)  # Load messages from JSON
 
-    gc = gspread.service_account(filename=r"C:\Users\WFH\Desktop\WhaBot\service_account.json")
+    gc = gspread.service_account(filename=r"service_account.json")
     gSheet = gc.open_by_url(sheet_url)
     worksheet = gSheet.worksheet('test')  # Adjust the sheet name if necessary
     data = worksheet.get_all_records()  # Fetch all records
